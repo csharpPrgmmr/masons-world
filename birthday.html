@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mason's World - Chat Page</title>
+<style>
+	html, body {
+    		font-family: Verdana,sans-serif;
+    	}
+    	
+    	.pageTable {
+ 	
+    	}
+
+    	.pageTable th {
+    		padding-top: 10px;
+    		padding-botom: 10px;
+    		font-weight: normal;
+    	}
+    	
+    	.pageTable td {
+    		text-align: center;
+    		padding: 10px;
+    	}
+    	
+    	.titleHdr {
+    		font-size: 40px;
+    		color: #478dc9;
+    	}
+    	
+    	.talkButtonTable {
+    		position: fixed;
+    		top: 56%;
+    		width: 630px;
+    		margin-left: 15px;
+    	}
+    	
+    	.talkButtonTable td {
+    		text-align: left;
+    		width: 300px;
+    	}
+    	
+    	.modalContent {
+	    /* some styles to position the modal at the center of the page */
+	    position: fixed;
+	    top: 50%;
+	    left: 50%;
+	    width: 650px;
+	    line-height: 20px;
+	    height: 450px;
+	    margin-left: -325px;
+	    margin-top: -250px;
+	    background-color: #ffffff;
+	  
+	    /* needed styles for the overlay */
+	    z-index: 10; /* keep on top of other elements on the page */
+	    outline: 9999px solid rgba(0,0,0,0.5);
+	    
+	    background-size: auto 360px;
+	    background-color: #ffffff;
+	    background-position: center bottom;
+	    background-repeat: no-repeat;
+	}
+    	
+    	.hideMe {
+    		visibility: hidden;
+    	}
+    	
+    	.overlay {
+	  position: fixed;
+	  top: 0;
+	  left: 0;
+	  height: 100%;
+	  width: 100%;
+	  z-index: 10;
+	  background-color: rgba(0,0,0,0.5);
+	}
+</style>
+<link rel="stylesheet" href="./font-awesome-4.6.3/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="./css/button.css">
+<script src="js/jquery-3.0.0.js"></script>
+<script src="js/speakFunctions.js"></script>
+<script src="js/characters.js"></script>
+<script type="text/javascript">
+	var _speakFunctions = speakFunctions({});
+	_speakFunctions.fn.init();
+		
+	var maxTalkButtons = 4;
+	var currentCharacter = {};
+	var currentButtonPhrases = [];
+	
+	var resetVars = function() {
+		currentCharacter = {};
+		currentButtonPhrases = [];
+		$(".bubbleText").addClass("hideMe");
+		$(".bubbleText").html("");	
+	};
+	
+	var startChat = function(character) {
+		resetVars();
+		currentCharacter = character;
+		setUserPhrases(currentCharacter.Conversations);
+	};
+	
+	var completePhrase = function(phrase, alternateReader, isForSpeech) {
+		var newPhrase = "";
+		
+		if(isForSpeech === true) {
+			if(typeof(alternateReader) !== "undefined") {
+				phrase = alternateReader;
+			}
+			newPhrase = phrase.replace("%characterName%", currentCharacter.SpokenName);
+		}
+		else {
+			newPhrase = phrase.replace("%characterName%", currentCharacter.VisualName);
+		}
+		
+		return newPhrase;
+	};
+	
+	var setUserPhrases = function(phrases) {
+		currentButtonPhrases = phrases;
+				
+		for (i = 0; i < maxTalkButtons; i++) { 
+			var buttonIdx = i+1;
+			var buttonIdentifier = ".textButton" + buttonIdx;
+			if(i< phrases.length) {
+				buttonText = completePhrase(phrases[i].Phrase, phrases[i].Reader, false);
+				$(buttonIdentifier).html(buttonText);
+				$(buttonIdentifier).removeClass("hideMe");
+			}
+			else {
+				$(buttonIdentifier).addClass("hideMe");
+				$(buttonIdentifier).html("");				
+			}	
+		};
+		$(".talkButtonTable").removeClass("hideMe");
+	};
+	
+	var onUserTalk = function(buttonIndex) {
+		// clear all talk buttons
+		for (i = 0; i < maxTalkButtons; i++) { 
+			var buttonIdx = i+1;
+			var buttonIdentifier = ".textButton" + buttonIdx;	
+			//$(buttonIdentifier).addClass("hideMe");
+			//$(buttonIdentifier).html("");	
+		};
+		$(".talkButtonTable").addClass("hideMe");
+
+		// clear any reply
+		$(".bubbleText").addClass("hideMe");
+		$(".bubbleText").html("");
+		
+		// get phrase
+		var currentPhrase = currentButtonPhrases[buttonIndex];
+		
+		// read text
+		u = _speakFunctions.fn.getUtterance(completePhrase(currentPhrase.Phrase, currentPhrase.Reader, true), "Samantha",0, 0);
+		
+		_speakFunctions.fn.speakItWithCallback(u, handleReply, currentPhrase);
+	};
+	
+	var handleReply = function(currentPhrase) {
+		// selectReply randomly
+		var replyIndex = 0;
+		if(currentPhrase.Responses.length > 1) {
+			replyIndex = randomIntFromInterval(1,currentPhrase.Responses.length)-1;
+		}
+		
+		var currentReply = currentPhrase.Responses[replyIndex];
+		
+		// speak reply, do this on complete
+		var u = _speakFunctions.fn.getUtterance(completePhrase(currentReply.Response, currentReply.Reader, true), currentCharacter["Voice"].Name, currentCharacter["Voice"].Rate, currentCharacter["Voice"].Pitch);
+		
+		_speakFunctions.fn.speakItWithCallback(u, respondToUser, currentPhrase, currentReply);
+		
+		displayReply(completePhrase(currentReply.Response, false));
+	};
+	
+	var randomIntFromInterval = function(min,max) {
+	    return Math.floor(Math.random()*(max-min+1)+min);
+	}
+	
+	var displayReply = function(displayText) {
+		// write reply, do this on start 
+		$(".bubbleText").html(displayText);
+		$(".bubbleText").removeClass("hideMe");
+	};
+	
+	var respondToUser = function(currentPhrase, currentReply) {
+		// set next phrases
+		// if phrases are empty, end conversation
+		if(currentReply.Phrases.length < 1) {
+			// end conversation
+			if ((typeof(currentPhrase.IsBye) !== "undefined") && (currentPhrase.IsBye === true))
+			{
+				resetVars();
+				$(".modal").addClass("hideMe");
+			}
+			else {
+				startChat(currentCharacter);
+			}
+		}
+		else {
+			setUserPhrases(currentReply.Phrases);
+		}
+	}
+	
+	$(document).ready(function() {
+		$(".toggleButton").click(function() {
+			resetVars();
+			if($(".modal").hasClass("hideMe")) {
+				$(".modal").removeClass("hideMe");
+			}
+			else {
+				$(".modal").addClass("hideMe");
+			}
+		});
+		
+		$(".bartButton").click(function() {
+			$(".modalContent").css("background-image", "url(./images/bartRnormal.png)"); 
+			startChat(characters["Bart"]);
+		});
+		
+		$(".mcpButton").click(function() {
+			$(".modalContent").css("background-image", "url(./images/mcpNormal.png)"); 
+			startChat(characters["McPufferson"]);
+		});
+		
+		$(".catmanButton").click(function() {
+			$(".modalContent").css("background-image", "url(./images/mrCatman.jpg)"); 
+			startChat(characters["MrCatman"]);
+		});
+		
+		$(".wuzzoButton").click(function() {
+			$(".modalContent").css("background-image", "url(./images/wuzzo.png)"); 
+			startChat(characters["Wuzzo"]);
+		});
+		
+		$(".textButton1").click(function() {
+			onUserTalk(0);
+		});
+		
+		$(".textButton2").click(function() {
+			onUserTalk(1);
+		});	
+		
+		$(".textButton3").click(function() {
+			onUserTalk(2);
+		});
+		
+		$(".textButton4").click(function() {
+			onUserTalk(3);
+		});
+		
+		$(".home-button").click(function() {
+			location.href = "./";
+		});	
+	});
+</script>
+</head>
+<body>
+<table border="0px" align="center" class="pageTable">
+<thead>
+<tr>
+	<th colspan="2"><div class="titleHdr">Who do you want to talk to?</div></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+	<td><a class="toggleButton bartButton" href="javascript:void(0);" onclick=""><img src="./images/bartRnormal.png" alt="Bart Reynolds" /></a></td>
+	<td><a class="toggleButton mcpButton" href="javascript:void(0);" onclick=""><img src="./images/mcpNormal.png" alt="McPufferson" /></a></td>
+</tr>
+<tr>
+	<td><a class="toggleButton catmanButton" href="javascript:void(0);" onclick=""><img src="./images/mrCatman.jpg" height="130" width="231" alt="Mr. Catman" /></a></td>
+	<td><a class="toggleButton wuzzoButton" href="javascript:void(0);" onclick=""><img src="./images/wuzzo.png" alt="Wuzzo" /></a></td>
+</tr>
+<tr>
+	<td colspan="2"><a class="home-button" title="Go Back Home"></a></td>
+</tbody>
+</table>
+
+<div class="modal hideMe">
+	<div class="overlay"></div>
+	<div class="modalContent">
+		<div style="color: #478dc9; margin-top: 20px; font-size: 24px; font-weight: bold; text-align: center;">What do you want to say?</div>
+		<div style="margin-left: 15px; margin-top: 20px; opacity: 0.5;" class="bubbleText bubble-bottom"></div>
+		<div><a class="toggleButton close-modal-button"></a></div>
+		<table class="talkButtonTable">
+			<tr>
+				<td><button class="button textButton1"></button></td>
+				<td><button class="button textButton2"></button></td>
+			</tr>
+			<tr>
+				<td><button class="button textButton3"></button></td>
+				<td><button class="button textButton4"></button></td>
+			</tr>
+		</table>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="js/jquery-3.0.0.js"></script>
+<script type="text/javascript">
+
+var speakIt = function() {
+	var u = new SpeechSynthesisUtterance('Hey Mason, Happy Birthday!');
+	//u.rate = 0.75;
+      	//u.pitch = 2.0;
+    	
+    	
+    	var voiceText = "";
+    	var voices = speechSynthesis.getVoices();
+      	for(var i = 0; i < voices.length; i++ ) {
+        	voiceText += "<br/>Voice " + i.toString() + ' ' + voices[i].name + ' ' + voices[i].uri;
+        	
+        	if(voices[i].name === "Daniel") {
+        		u.voice = voices[i];	
+        	}
+        	//utterance.voice = voices.filter(function(voice) { return voice.name == 'Alex'; })[0];
+        	
+      	}
+      	$("#voiceInfo").html(voiceText);
+      	
+      	speechSynthesis.speak(u);
+};
+
+</script>
+</head>
+<body>
+This is Mason's World
+<br/><br/>
+<button onclick="speakIt()">Speak</button>
+<br/><br/>
+<div id="voiceInfo"></div>
+</body>
+</html>

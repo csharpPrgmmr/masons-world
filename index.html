@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mason's World - Home Page</title>
+<style>
+	html, body {
+    		font-family: Verdana,sans-serif;
+    	}
+    	
+    	.pageTable {
+    		
+    	}
+
+    	.pageTable th {
+    		font-weight: normal;
+    	}
+    	
+    	.pageTable td {
+    		text-align: center;
+    		padding: 10px;
+    	}
+    	
+    	.titleHdr {
+    		font-size: 50px;
+    		color: #478dc9;
+    	}
+</style>
+
+<script src="js/jquery-3.0.0.js"></script>
+<script src="js/speakFunctions.js"></script>
+<script type="text/javascript">
+	var _speakFunctions = speakFunctions({});
+	_speakFunctions.fn.init();
+
+	$(document).ready(function() {
+		$("#birthdayButton").click(function() {
+			_speakFunctions.fn.speakIt("Go Mason, It's your birthday!","Daniel",0,0);
+			location.href = "birthday.html";
+		});
+		
+		$("#goNoodleButton").click(function() {
+			_speakFunctions.fn.speakIt("Let's play Go Noodle!","Daniel",.0,0);
+			location.href = "https://app.gonoodle.com/login?ref_id=GNlogin";
+		});
+		
+		$("#mixelButton").click(function() {
+			_speakFunctions.fn.speakIt("Let's build a mixel!","Daniel",0,0);
+			location.href = "http://www.lego.com/en-us/mixels";
+		});
+	});
+</script>
+</head>
+<body>
+<h1></h1>
+<table border="0px" align="center" class="pageTable">
+<thead>
+<tr>
+	<th><div class="titleHdr">{ Mason's World }</div></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+	<td><a href="javascript:void(0);" id="birthdayButton"><img src="./images/happyBirthday.gif" alt="Happy Birthday" /></a></td>
+</tr>
+<tr>
+	<td><a href="javascript:void(0);" id="goNoodleButton"><img src="./images/goNoodleIcon.png" alt="Go Noodle" /></a></td>
+</tr>
+<tr>
+	<td><a href="javascript:void(0);" id="mixelButton"><img src="./images/mixelIcon.png" alt="Build Mixels" /></a></td>	
+</tr>
+</tbody>
+</table>	
+</body>
+</html>
