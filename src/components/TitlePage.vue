@@ -83,7 +83,10 @@
         <b-spinner class="mt-3 p-3" variant="primary" label="Talking..." />
       </div>
 
+      <hr />
+
       <div v-if="waitingOnAnswer" class="text-center">
+        <h4>{{listeningText}}</h4>
         <b-spinner class="mt-3 p-3" variant="success" label="Listening..." />
       </div>
 
@@ -265,6 +268,14 @@ export default {
         return false;
       }
     },
+    listeningText() {
+      if(this.listening) {
+        return "Talk, I'm listening."
+      }
+      else {
+        return "Hold on just a second."
+      }
+    }
   },
   methods: {
     getSpeechText(busy, speech, color) {
@@ -414,19 +425,20 @@ export default {
         recognition.lang = "en-US";
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
-        recognition.addEventListener("start", this.handleAnswerStart);
+        recognition.addEventListener("audiostart", this.handleAnswerStart);
         recognition.addEventListener("result", this.handleAnswerResult);
         recognition.addEventListener("error", this.handleAnswerNoMatch);
         recognition.addEventListener("nomatch", this.handleAnswerNoMatch);
         recognition.addEventListener("end", this.handleAnswerEnd);
         this.currentListener = recognition;
+        this.waitingOnAnswer = true;
         recognition.start();
       }
     },
     handleAnswerStart(evt) {
       // eslint-disable-next-line no-console
       console.log(evt);
-      this.waitingOnAnswer = true;
+      this.listening = true
     },
     handleAnswerResult(evt) {
       // eslint-disable-next-line no-console
@@ -453,12 +465,14 @@ export default {
       // eslint-disable-next-line no-console
       console.log(evt);
       this.waitingOnAnswer = false;
-      this.currentAnswer = "I didn't understand, click answer and try again.";
+      this.listening = false
+      this.currentAnswer = "I didn't understand, click listen to try again.";
     },
     handleAnswerEnd(evt) {
       // eslint-disable-next-line no-console
       console.log(evt);
       this.waitingOnAnswer = false;
+      this.listening = false
     },
     showCharacterChat(char) {
       this.bye();
@@ -606,6 +620,7 @@ export default {
       currentUtterance: null,
       currentAnswer: "",
       waitingOnAnswer: false,
+      listening: false,
       currentListener: null,
       yesAnswers: ["yes", "yep", "yeah", "okay", "ok"],
       listenAfterSpeak: false,
