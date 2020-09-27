@@ -1,0 +1,18 @@
+- Format modal
+- Import JS audio library
+	* Read "who do you want to talk to?"
+	* try to get it to respond and open with the name
+	
+	
+	
+14:6B:9C:AD:C6:BF - backyard - .2 - .40 - YES - wireless
+10:A4:BE:93:8A:51 - doorbell - .7 - .41 - YES - wireless
+94:0B:2D:02:F2:72 - driveway - .3 - .42 - YES - Wired
+
+- write python code to ping and email if they aren't up
+- migrate and schedule on the PI
+- review alarm system code
+
+
+
+extra-index-url=https://www.piwheels.org/simple
